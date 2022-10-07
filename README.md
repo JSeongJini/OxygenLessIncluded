@@ -30,5 +30,8 @@
 ### 내 역할과 업무성과
  - 랜덤맵 생성 알고리즘 개발
  > 이진 공간 분할법(Binary Space Partitioning)을 이용해 구역을 나눈 후, 각 구역마다 셀룰러 오토마타 방식을 응용하여 랜덤한 동굴모양의 공간(산소)들을 만드는 방식으로 매 게임마다 랜덤한 형태의 맵을 생성하도록 구현하였습니다.
- ![랜덤맵1](https://user-images.githubusercontent.com/70570420/194385412-98f15820-94e9-415b-b3bd-2ca9e17b6c2b.PNG)
-![랜덤맵2](https://user-images.githubusercontent.com/70570420/194385428-85acf642-e809-4874-93bf-c200e23e7bb2.PNG)
+![랜덤맵](https://user-images.githubusercontent.com/70570420/194479565-72d3ccac-2c69-4a0e-a363-94e6ee0aff1b.png)
+
+- 맵의 변화에 따라 타일의 모양이 자동으로 변화되는 알고리즘 개발
+> 돌(사암)을 채취할 때 마다 콜백을 이용해 그 주변의 돌들이 8방향 타일에 맞추어 변경되도록 구현하였습니다.
+![타일맵3](https://user-images.githubusercontent.com/70570420/194478827-e82bda2e-1bba-463a-a0d0-abf6b6573b31.png)
