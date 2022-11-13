@@ -40,3 +40,33 @@
 - 산소의 흐름 알고리즘 개발
 > 산소가 많은 곳에서 적은 곳으로 이동하도록 하여, 공간 내 산소의 분포가 고르게 되도록 구현하였습니다.
 ![산소20221007_183626](https://user-images.githubusercontent.com/70570420/194523466-19c0a789-9985-4804-9080-9df7041a914d.gif)
+```C#
+//근처에 산소가 있다면
+if (neighbourAir)
+{
+    float ownAmount = resourceMap[_pos.x, _pos.y].GetAmount();
+    float negihbourAmount = neighbourAir.GetAmount();
+
+    while (Mathf.Abs(negihbourAmount - ownAmount) > 20f)
+    {
+        //산소량이 많은 산소에서 적은 산소로 산소 이동
+        if (negihbourAmount >= ownAmount)
+        {
+            float delta = Mathf.Lerp(0f, (negihbourAmount - ownAmount), 0.1f);
+            resourceMap[_pos.x, _pos.y].Gain(delta);
+            neighbourAir.Consume(delta);
+        }
+        else
+        {
+            float delta = Mathf.Lerp(0f, (ownAmount - negihbourAmount), 0.1f);
+            resourceMap[_pos.x, _pos.y].Consume(delta);
+            neighbourAir.Gain(delta);
+        }
+
+        yield return new WaitForSeconds(1f);
+
+        ownAmount = resourceMap[_pos.x, _pos.y].GetAmount();
+        negihbourAmount = neighbourAir.GetAmount();
+    }
+}
+````
