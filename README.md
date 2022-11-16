@@ -25,6 +25,7 @@
 ![2](https://user-images.githubusercontent.com/70570420/183586784-569239cf-a2b8-4b3e-9eb1-b30c885ffb6e.PNG)
 ![4](https://user-images.githubusercontent.com/70570420/183586800-f3023abf-cba5-42e0-af93-91ac488a0d33.png)
 ![5](https://user-images.githubusercontent.com/70570420/183586812-0f564d74-f7ce-4fe7-82af-5ecbaa745064.PNG)
+[플레이 영상](https://youtu.be/zhxk8hkDZ20)
 
 
 ### 내 역할과 업무성과
