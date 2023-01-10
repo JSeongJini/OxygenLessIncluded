@@ -22,7 +22,7 @@ public class PathFinder : MonoBehaviour
     int sizeH;
     int mapSize;
 
-    Node[, ] NodeArray;
+    Node[, ] nodeArray;
     Node StartNode, GoalNode, CurNode;
     List<Node> openList = new List<Node>();
     List<Node> closeList = new List<Node>();
@@ -30,22 +30,27 @@ public class PathFinder : MonoBehaviour
     int upCount = 0;
     int downCount = 0;
 
-    public List<Node> PathFinding(Vector2Int _startPos, Vector2Int _goalPos, int _sizeW, int _sizeH, int[, ] _moveMap)
+    public void InitializeMapSize(int _sizeW, int _sizeH)
     {
-        List<Node> FinalNodeList = new List<Node>();
-
         sizeW = _sizeW;
         sizeH = _sizeH;
         mapSize = sizeW * _sizeH;
         
-        NodeArray = new Node[sizeW, sizeH];
+        nodeArray = new Node[sizeW, sizeH];
 
         for (int y = 0; y < sizeH; y++)
-            for(int x = 0; x < sizeW; x++)
-                    NodeArray[x, y] = new Node(_moveMap[x, y], x, y);
+            for (int x = 0; x < sizeW; x++)
+                nodeArray[x, y] = new Node(0, x, y);
+    }
+
+    public void PathFinding(Vector2Int _startPos, Vector2Int _goalPos, int[, ] _moveMap, List<Node> _finalNodeList)
+    {
+        for (int y = 0; y < sizeH; y++)
+            for (int x = 0; x < sizeW; x++)
+                nodeArray[x, y].move = _moveMap[x, y];
         
-        StartNode = NodeArray[_startPos.x, _startPos.y];
-        GoalNode = NodeArray[_goalPos.x, _goalPos.y];
+        StartNode = nodeArray[_startPos.x, _startPos.y];
+        GoalNode = nodeArray[_goalPos.x, _goalPos.y];
 
         openList.Add(StartNode);
 
@@ -85,34 +90,34 @@ public class PathFinder : MonoBehaviour
                 Node goalCurNode = GoalNode;
                 while (goalCurNode != StartNode)
                 {
-                    FinalNodeList.Add(goalCurNode);
+                    _finalNodeList.Add(goalCurNode);
                     goalCurNode = goalCurNode.ParentNode;
                 }
-                FinalNodeList.Add(StartNode);
-                FinalNodeList.Reverse();
+                _finalNodeList.Add(StartNode);
+                _finalNodeList.Reverse();
             }
 
-            if (((NodeArray[CurNode.x + 1, CurNode.y].move == 0
-                || NodeArray[CurNode.x - 1, CurNode.y].move == 0)
-                && upCount < 2) || NodeArray[CurNode.x, CurNode.y].move == 3) {
+            if (((nodeArray[CurNode.x + 1, CurNode.y].move == 0
+                || nodeArray[CurNode.x - 1, CurNode.y].move == 0)
+                && upCount < 2) || nodeArray[CurNode.x, CurNode.y].move == 3) {
                 OpenListAdd(CurNode.x, CurNode.y + 1); // 상이동
             }
 
-            if (downCount < 2 || NodeArray[CurNode.x, CurNode.y].move == 3)
+            if (downCount < 2 || nodeArray[CurNode.x, CurNode.y].move == 3)
             {
                 OpenListAdd(CurNode.x, CurNode.y - 1);   // 하이동
             }
 
             if (upCount > 0 || downCount > 0)
             {
-                if(NodeArray[CurNode.x +1, CurNode.y].move >= 2)
+                if(nodeArray[CurNode.x +1, CurNode.y].move >= 2)
                     OpenListAdd(CurNode.x + 1, CurNode.y);   // 우이동    
-                if (NodeArray[CurNode.x - 1, CurNode.y].move >= 2)
+                if (nodeArray[CurNode.x - 1, CurNode.y].move >= 2)
                     OpenListAdd(CurNode.x - 1, CurNode.y); // 좌이동
             }
             else
             {
-                if (NodeArray[CurNode.x, CurNode.y].move >= 2)
+                if (nodeArray[CurNode.x, CurNode.y].move >= 2)
                 {
                     OpenListAdd(CurNode.x + 1, CurNode.y);   // 우이동         
                     OpenListAdd(CurNode.x - 1, CurNode.y);   // 좌이동
@@ -120,7 +125,9 @@ public class PathFinder : MonoBehaviour
             }
         }
 
-        return FinalNodeList;
+        openList.Clear();
+        closeList.Clear();
+
     }
 
     private void OpenListAdd(int _x, int _y)
@@ -128,11 +135,11 @@ public class PathFinder : MonoBehaviour
         //상하좌우 범위를 벗어나지 않고, 벽이 아니면서, 닫힌리스트에 없다면 
         if (_x >= 0 && _x < sizeW
             && _y >= 0 && _y < sizeH
-            && NodeArray[_x, _y].move > 0
-            && !closeList.Contains(NodeArray[_x, _y]))
+            && nodeArray[_x, _y].move > 0
+            && !closeList.Contains(nodeArray[_x, _y]))
         {
             // 이웃노드에 넣고, 직선은 10
-            Node NeighborNode = NodeArray[_x, _y];
+            Node NeighborNode = nodeArray[_x, _y];
             int MoveCost = CurNode.G + 10;
 
 

@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class ResourceAir : ResourceBase
 {
+    public bool onFlow = false;
+
     protected override void Awake()
     {
         base.Awake();
-        sr.sprite = sprites[24];
     }
 
     private void Start()
@@ -17,6 +18,7 @@ public class ResourceAir : ResourceBase
             UpdateTransparency();
         };
     }
+
 
     private void UpdateTransparency()
     {

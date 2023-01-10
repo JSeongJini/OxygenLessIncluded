@@ -9,14 +9,28 @@ public class NPC : MonoBehaviour
     [SerializeField] private MapManager mapManager = null;
     [SerializeField] private CautionManager cautionManager = null;
 
+    #region Ä³½Ì
+    private WaitForSeconds workDelay = new WaitForSeconds(0.2f);
+    private WaitForSeconds breathDelay = new WaitForSeconds(0.5f);
+    private int hashWork = Animator.StringToHash("isWork");
+    private int hashSpeed = Animator.StringToHash("speed");
+    private int hashIsLadder = Animator.StringToHash("isLadder");
+    private int hashSleep = Animator.StringToHash("sleep");
+    private int hashWakeUp = Animator.StringToHash("wakeUp");
+    private List<Vector2Int> workPosList = null;
+    private List<Node> path = new List<Node>();
+    private List<Node> avoidPath = new List<Node>();
+    private Vector3 leftScale = new Vector3(-1f, 1f, 1f);
+    private Vector3 rightScale = new Vector3(1f, 1f, 1f);
+    #endregion
+
     private Animator anim = null;
 
-    private List<WorkBase> waitingStream = null;
+    [SerializeField]  private List<WorkBase> waitingStream = null;
     private List<WorkBase> doingList = null;
     private WorkBase curWork = null;
-    private List<Node> path = null;
     private Vector2Int avoidPos;
-    private ENPCState state = ENPCState.Idle;
+    [SerializeField] private ENPCState state = ENPCState.Idle;
 
     private bool sleepTrigger = false;
     private bool gatherTrigger = false;
@@ -39,40 +53,51 @@ public class NPC : MonoBehaviour
     {
         StartCoroutine("BreathOut");
         StartCoroutine("BreathIn");
+
+        hashWork = Animator.StringToHash("isWork");
+        workPosList = new List<Vector2Int>();
+
     }
     private void Update()
     {
         if (state == ENPCState.Idle && !sleepTrigger)
         {
-            avoidPos = mapManager.GetAvoidPos(GetNPCPos());
-            if (avoidPos != -Vector2Int.one && avoidPos != GetNPCPos())
+            if (!mapManager.CanStand(GetNPCPos()))
             {
-                state = ENPCState.Avoiding;
-                StartCoroutine("Avoiding", avoidPos);
+                avoidPos = mapManager.GetAvoidPos(GetNPCPos());
+                if (avoidPos != -Vector2Int.one && avoidPos != GetNPCPos())
+                {
+                    state = ENPCState.Avoiding;
+                    StartCoroutine("Avoiding", avoidPos);
+                }
             }
             else
-            {
-                if (waitingStream.Count == 0) return;
+            {  
+                if (waitingStream.Count == 0)
+                    return;
 
                 curWork = waitingStream[0];
                 waitingStream.RemoveAt(0);
 
-                List<Vector2Int> workPosList = mapManager.GetWorkPos(GetNPCPos(), curWork.GetTargetPosition());
+                workPosList.Clear();
+                mapManager.GetWorkPos(GetNPCPos(), curWork.GetTargetPosition(), workPosList);
+
                 if (workPosList.Count == 0)
                 {
-                    workPosList = null;
                     waitingStream.Add(curWork);
                     return;
                 }
-
                 for (int i = 0; i < workPosList.Count; i++)
                 {
-                    path = mapManager.PathFind(GetNPCPos(), workPosList[i]);
-                    if (path.Count != 0) break;
+                    path.Clear();
+                    mapManager.PathFind(GetNPCPos(), workPosList[i], path);
+                    if (path.Count != 0)
+                    {
+                        break;
+                    }
                 }
                 if (path.Count == 0)
                 {
-                    path = null;
                     waitingStream.Add(curWork);
                     return;
                 }
@@ -93,11 +118,11 @@ public class NPC : MonoBehaviour
 
     private IEnumerator Moving()
     {
-        anim.SetFloat("speed", 1f);
-        if (path == null)
+        anim.SetFloat(hashSpeed, 1f);
+        if (path.Count == 0)
         {
             state = ENPCState.Idle;
-            anim.SetFloat("speed", 0f);
+            anim.SetFloat(hashSpeed, 0f);
         }
         else{
             int distance = path.Count;
@@ -106,8 +131,8 @@ public class NPC : MonoBehaviour
                 Vector3 startPos = transform.position;
                 Vector3 targetPos = new Vector3(path[1].x, path[1].y, 0f);
 
-                transform.localScale = (startPos.x < targetPos.x) ? new Vector3(-1f, 1f, 1f) : new Vector3(1f, 1f, 1f);
-                anim.SetBool("isLadder", mapManager.IsLadder(GetNPCPos()) && mapManager.IsLadder(new Vector2Int((int)targetPos.x, (int)targetPos.y)));
+                transform.localScale = (startPos.x < targetPos.x) ? leftScale : rightScale;
+                anim.SetBool(hashIsLadder, mapManager.IsLadder(GetNPCPos()) && mapManager.IsLadder(new Vector2Int((int)targetPos.x, (int)targetPos.y)));
                 float elpased = 0f;
                 while (elpased <= 1f)
                 {
@@ -116,33 +141,34 @@ public class NPC : MonoBehaviour
                     yield return null;
                 }
                 transform.position = targetPos;
-                path.RemoveAt(1);
+                if(path.Count > 1)
+                    path.RemoveAt(1);
             }
-            anim.SetFloat("speed", 0f);
-            path = null;
+            anim.SetFloat(hashSpeed, 0f);
             state = ENPCState.Working;
             StartCoroutine("Working");
         }
     }
 
+    
+
     private IEnumerator Working()
     {
-        if (curWork.GetType() == typeof(WorkBuild) &&
-                mapManager.GetResourceByPos(curWork.GetTargetPosition()).GetType() != typeof(ResourceAir))
+        if (curWork is WorkBuild &&
+                !(mapManager.GetResourceByPos(curWork.GetTargetPosition()) is ResourceAir))
             waitingStream.Add(curWork);
         else
         {
-            anim.SetBool("isWork", true);
+            anim.SetBool(hashWork, true);
             while (curWork.Work(digPower) > 0f)
             {
-                yield return new WaitForSeconds(0.2f);
+                yield return workDelay;
             }
         }
 
-        anim.SetBool("isWork", false);
+        anim.SetBool(hashWork, false);
         doingList.Remove(curWork);
         state = ENPCState.Idle;
-        yield return null;
     }
 
 
@@ -150,9 +176,9 @@ public class NPC : MonoBehaviour
     {
         ENPCState tmp = state;
         state = ENPCState.Sleeping;
-        anim.SetTrigger("sleep");
+        anim.SetTrigger(hashSleep);
         yield return new WaitForSeconds(7.2f);
-        anim.SetTrigger("wakeUp");
+        anim.SetTrigger(hashWakeUp);
  
 
         state = tmp;
@@ -175,19 +201,19 @@ public class NPC : MonoBehaviour
         return pos;
     }
 
-    public void FIndNewPath()
+    public void FindNewpath()
     {
         if (state != ENPCState.Moving) return;
         StopCoroutine("Moving");
         Vector2Int targetPos = new Vector2Int(path[path.Count - 1].x, path[path.Count - 1].y);
-        path = mapManager.PathFind(GetNPCPos(), targetPos);
+        path.Clear();
+        mapManager.PathFind(GetNPCPos(), targetPos, path);
         if(path.Count == 0)
         {
             doingList.Remove(curWork);
             waitingStream.Add(curWork);
             state = ENPCState.Idle;
-            anim.SetFloat("speed", 0f);
-            path = null;
+            anim.SetFloat(hashSpeed, 0f);
         }
         else
         {
@@ -198,25 +224,22 @@ public class NPC : MonoBehaviour
 
     private IEnumerator Avoiding()
     {
-        List<Node> avoidPath = mapManager.PathFind(GetNPCPos(), avoidPos);
-        
+        avoidPath.Clear();
+  
+        Vector3 startPos = transform.position;
+        Vector3 targetPos = new Vector3(avoidPos.x, avoidPos.y, 0f);
 
-        for (int i = 1; i < avoidPath.Count; i++)
+        transform.localScale = (startPos.x < targetPos.x) ? leftScale : rightScale;
+        anim.SetBool(hashIsLadder, mapManager.IsLadder(avoidPos));
+        float elpased = 0f;
+        while (elpased <= 1f)
         {
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = new Vector3(avoidPath[i].x, avoidPath[i].y, 0f);
-
-            transform.localScale = (startPos.x < targetPos.x) ? new Vector3(-1f, 1f, 1f) : new Vector3(1f, 1f, 1f);
-            anim.SetBool("isLadder", mapManager.IsLadder(GetNPCPos()) && mapManager.IsLadder(new Vector2Int((int)targetPos.x, (int)targetPos.y)));
-            float elpased = 0f;
-            while (elpased <= 1f)
-            {
-                transform.position = Vector3.Lerp(startPos, targetPos, elpased);
-                elpased += Time.deltaTime * speed;
-                yield return null;
-            }
-            transform.position = targetPos;
+            transform.position = Vector3.Lerp(startPos, targetPos, elpased);
+            elpased += Time.deltaTime * speed;
+            yield return null;
         }
+        transform.position = targetPos;
+  
         state = ENPCState.Idle;
     }
 
@@ -231,13 +254,12 @@ public class NPC : MonoBehaviour
         while(oxygenRate > 0f)
         {
             oxygenRate -= Time.deltaTime * 2f;
-            yield return (0.5f);
+            yield return breathDelay;
         }
         if(oxygenRate <= 0f)
         {
             Die();
         }
-        yield return null;
     }
 
     private IEnumerator BreathIn()
@@ -285,7 +307,8 @@ public class NPC : MonoBehaviour
         StopCoroutine("Working");
         StopCoroutine("Avoiding");
         gatherTrigger = true;
-        path = mapManager.PathFind(GetNPCPos(), _pos);
+        path.Clear();
+        mapManager.PathFind(GetNPCPos(), _pos, path);
         if (path.Count != 0)
         {
             StartCoroutine("GatherCoroutine");
@@ -299,14 +322,14 @@ public class NPC : MonoBehaviour
     private IEnumerator GatherCoroutine()
     {
         int distance = path.Count;
-        anim.SetFloat("speed", 1f);
+        anim.SetFloat(hashSpeed, 1f);
         for (int i = 1; i < distance; i++)
         {
             Vector3 startPos = transform.position;
             Vector3 targetPos = new Vector3(path[1].x, path[1].y, 0f);
 
             transform.localScale = (startPos.x < targetPos.x) ? new Vector3(-1f, 1f, 1f) : new Vector3(1f, 1f, 1f);
-            anim.SetBool("isLadder", mapManager.IsLadder(GetNPCPos()) && mapManager.IsLadder(new Vector2Int((int)targetPos.x, (int)targetPos.y)));
+            anim.SetBool(hashIsLadder, mapManager.IsLadder(GetNPCPos()) && mapManager.IsLadder(new Vector2Int((int)targetPos.x, (int)targetPos.y)));
             float elpased = 0f;
             while (elpased <= 1f)
             {
@@ -317,8 +340,7 @@ public class NPC : MonoBehaviour
             transform.position = targetPos;
             path.RemoveAt(1);
         }
-        anim.SetFloat("speed", 0f);
-        path = null;
+        anim.SetFloat(hashSpeed, 0f);
         yield return new WaitForSeconds(0.5f);
         gameObject.SetActive(false);
         
