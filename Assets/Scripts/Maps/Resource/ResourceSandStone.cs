@@ -4,13 +4,6 @@ using UnityEngine;
 
 public class ResourceSandStone : ResourceBase
 {
-    [SerializeField] private Sprite[] sprites = null;
-
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
     public void SpriteUpdate(bool _left, bool _right, bool _top, bool _bottom)
     {
         if (!sr) return;
@@ -25,18 +18,18 @@ public class ResourceSandStone : ResourceBase
             sr.sprite = sprites[2];
         else if ((!_left && _right && _top && _bottom) ||
             (!_left && _right && !_top && !_bottom))         //Left
-            sr.sprite = sprites[3];
+            sr.sprite = sprites[5];
         else if ((_left && !_right && _top && _bottom) ||
             (_left && !_right && !_top && !_bottom))         //Right
-            sr.sprite = sprites[4];
+            sr.sprite = sprites[7];
         else if (!_left && _right && _top && !_bottom)        //BottomLeft
-            sr.sprite = sprites[5];
+            sr.sprite = sprites[10];
         else if ((_left && _right && _top && !_bottom) ||
             (!_left && !_right && _top && !_bottom))         //Bottom
-            sr.sprite = sprites[6];
+            sr.sprite = sprites[11];
         else if (_left && !_right && _top && !_bottom)        //BottomLeft
-            sr.sprite = sprites[7];
+            sr.sprite = sprites[12];
         else                                                                //Center
-            sr.sprite = sprites[8];
+            sr.sprite = sprites[6];
     }
 }

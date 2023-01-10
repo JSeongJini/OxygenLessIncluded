@@ -15,7 +15,7 @@ public class WorkBase
     public WorkBase(Vector2Int _targetPos)
     {
         targetPos = _targetPos;
-        soundsManager = SoundsManager.Instance;
+        soundsManager = GameObject.FindObjectOfType<SoundsManager>();
         onFinishWork += soundsManager.StopAudio;
     }
 

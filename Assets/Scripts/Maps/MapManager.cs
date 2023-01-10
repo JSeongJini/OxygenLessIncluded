@@ -14,10 +14,7 @@ public class MapManager : MonoBehaviour
     private int sizeW = 192;
     private int sizeH = 108;
     private int[, ] mapInfo = null;
-
-    //초기화 스텝별로, 랜덤 맵 생성, 자원맵 생성, 이동맵 생성, 빌딩맵 생성
-
-
+       
     private void Awake()
     {
         //TODO : 시작하기인가, 불러오기인가에 따라
@@ -25,7 +22,7 @@ public class MapManager : MonoBehaviour
         mapInfo = new int[sizeW, sizeH];
         randomMapBuilder = GetComponent<RandomMapBuilder>();
         randomMapBuilder.CreateRandomMap(sizeW, sizeH, ref mapInfo);
-
+        
         //맵 불러오기
         //InitializeFromFile("Assets\\ResourceMap.txt");
     }
@@ -36,31 +33,6 @@ public class MapManager : MonoBehaviour
         moveMapMng.InitializeMoveMap(sizeW, sizeH, mapInfo);
         buildingMapMng.InitializeBuildingMap(sizeW, sizeH, mapInfo);
     }
-
-    //private void Update()
-    //{
-    //    switch (initialzeStep)
-    //    {
-    //        case 0:
-    //            randomMapBuilder.CreateRandomMap(sizeW, sizeH, ref mapInfo);
-    //            initialzeStep++;
-    //            break;
-    //        case 1:
-    //            resourceMapMng.InitializeResouceMap(sizeW, sizeH, mapInfo);
-    //            initialzeStep++;
-    //            break;
-    //        case 2:
-    //            moveMapMng.InitializeMoveMap(sizeW, sizeH, mapInfo);
-    //            initialzeStep++;
-    //            break;
-    //        case 3:
-    //            buildingMapMng.InitializeBuildingMap(sizeW, sizeH, mapInfo);
-    //            initialzeStep++;
-    //            break;
-    //        default:
-    //            break;
-    //    }
-    //}
 
 
     private bool InitializeFromFile(string _filePath)
@@ -87,9 +59,9 @@ public class MapManager : MonoBehaviour
         return true;
     }
 
-    public void PathFind(Vector2Int _startPos, Vector2Int _goalPos, List<Node> _path)
+    public List<Node> PathFind(Vector2Int _startPos, Vector2Int _goalPos)
     {
-        moveMapMng.PathFind(_startPos, _goalPos, _path);
+        return moveMapMng.PathFind(_startPos, _goalPos);
     }
 
     public ResourceBase GetResourceByPos(Vector2Int _pos)
@@ -97,8 +69,10 @@ public class MapManager : MonoBehaviour
         return resourceMapMng.GetResourceByPos(_pos);
     }
 
-    public void GetWorkPos(Vector2Int _startPos, Vector2Int _targetPos, List<Vector2Int> workPosList)
+    public List<Vector2Int> GetWorkPos(Vector2Int _startPos, Vector2Int _targetPos)
     {
+        List<Vector2Int> workPosList = new List<Vector2Int>();
+
         //시작위치와 비교하여 더 가까운 쪽 우선 검색
         int right = 1;
         int top = 1;
@@ -115,24 +89,24 @@ public class MapManager : MonoBehaviour
             bool canStand = moveMapMng.CanStand(workPos);
             if (canStand) workPosList.Add(workPos);
         }
-    }
 
-    
-    int[] dx = {0, 0, 1, 1, 1, 0,  -1, -1, -1 };
-    int[] dy = {0, -1, 1, 0, -1, 1, 1, 0, -1 };
+        return workPosList;
+    }
 
     public Vector2Int GetAvoidPos(Vector2Int _pos)
     {
         Vector2Int avoidPosList;
 
         int distance = 1;
+        int[] dx = {0, 0, distance, distance, distance, 0,  -distance, -distance, -distance };
+        int[] dy = {0, -distance, distance, 0, -distance, distance, distance, 0, -distance };
 
         //4방향 중 서 있을 수 있는 위치를 찾을 때 까지 반복
         while (distance < 10)
         {
             for (int i = 0; i < 9; i++)
             {
-                avoidPosList = new Vector2Int(_pos.x + (dx[i] * distance), _pos.y + (dy[i] * distance));
+                avoidPosList = new Vector2Int(_pos.x + dx[i], _pos.y + dy[i]);
                 bool canStand = moveMapMng.CanStand(avoidPosList);
                 if (canStand) return avoidPosList;
             }
@@ -193,10 +167,5 @@ public class MapManager : MonoBehaviour
     public bool IsLadder(Vector2Int _pos)
     {
         return moveMapMng.IsLadder(_pos);
-    }
-
-    public bool CanStand(Vector2Int _pos)
-    {
-        return moveMapMng.CanStand(_pos);
     }
 }

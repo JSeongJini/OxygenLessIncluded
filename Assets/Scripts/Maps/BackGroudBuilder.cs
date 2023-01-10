@@ -4,17 +4,16 @@ using UnityEngine;
 
 public class BackGroudBuilder : MonoBehaviour
 {
-    [SerializeField] private Sprite sprite = null;
-    [SerializeField] private GameObject backgroundPrefab = null;
-
-
     private GameObject[,] backgroundMap = null;
+    private Sprite[] sprites = null;
     private int sizeW = 0;
     private int sizeH = 0;
 
     private void Awake()
     {
+        sprites = Resources.LoadAll<Sprite>("Sprites\\Sprite_BgTile");
         SetBackgroundPool();
+        Test();
     }
 
     private void SetBackgroundPool()
@@ -26,38 +25,36 @@ public class BackGroudBuilder : MonoBehaviour
         {
             for (int x = 0; x < sizeW; x++)
             {
-                backgroundMap[x, y] = Instantiate(backgroundPrefab, transform);
+                backgroundMap[x, y] = new GameObject("BackgroundImage");
+                backgroundMap[x, y].AddComponent<SpriteRenderer>().sortingOrder = -2;
+                backgroundMap[x, y].transform.SetParent(transform);
                 backgroundMap[x, y].transform.position = new Vector3(x, y);
-
-                if (Random.Range(0f, 100f) < 5f)
-                {
-                    backgroundMap[x, y].GetComponent<SpriteRenderer>().sprite = sprite;
-                }
+                backgroundMap[x, y].gameObject.SetActive(true);
             }
         }
     }
 
-    //private void Test()
-    //{
-    //    for (int y = 0; y < sizeH; y++)
-    //    {
+    private void Test()
+    {
+        for (int y = 0; y < sizeH; y++)
+        {
 
-    //        for (int x = 0; x < sizeW; x++)
-    //        {
-    //            //y부터 x까지 좌하단부터 우상단까지 순차적으로 x,y 진입함 
+            for (int x = 0; x < sizeW; x++)
+            {
+                //y부터 x까지 좌하단부터 우상단까지 순차적으로 x,y 진입함 
 
 
-    //            if (Random.Range(0f, 100f) < 5f)
-    //            {
-    //                backgroundMap[x, y].GetComponent<SpriteRenderer>().sprite = sprites[13];
-    //            }
-    //            else
-    //            {
-    //                backgroundMap[x, y].GetComponent<SpriteRenderer>().sprite = sprites[10];
-    //            }
-    //            backgroundMap[x, y].GetComponent<SpriteRenderer>().color = new Color(0.4f, 0.4f, 0.4f, 1f);
-    //        }
-    //    }
-    //}
+                if (Random.Range(0f, 100f) < 5f)
+                {
+                    backgroundMap[x, y].GetComponent<SpriteRenderer>().sprite = sprites[13];
+                }
+                else
+                {
+                    backgroundMap[x, y].GetComponent<SpriteRenderer>().sprite = sprites[10];
+                }
+                    backgroundMap[x, y].GetComponent<SpriteRenderer>().color = new Color(0.4f, 0.4f, 0.4f, 1f);
+            }
+        }
+    }
 
 }

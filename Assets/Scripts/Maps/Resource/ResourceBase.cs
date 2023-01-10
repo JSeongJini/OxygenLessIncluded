@@ -5,9 +5,10 @@ using System;
 
 public class ResourceBase : MonoBehaviour
 {
-    [SerializeField] protected SpriteRenderer sr = null; 
+    protected SpriteRenderer sr = null;
+    protected Sprite[] sprites = null;
     
-    [SerializeField] protected float amount = 0f;
+    [SerializeField]protected float amount = 0f;
     protected readonly int maxAmount = 999;
 
     public delegate void OnChanged(Vector2Int _pos);
@@ -18,7 +19,9 @@ public class ResourceBase : MonoBehaviour
 
     protected virtual void Awake()
     {
-        //sr = GetComponent<SpriteRenderer>();
+        sr = gameObject.AddComponent<SpriteRenderer>();
+        sprites = Resources.LoadAll<Sprite>("Sprites\\Sprite_Tile");
+        sr.sprite = sprites[24];
         pos = new Vector2Int((int)transform.position.x, (int)transform.position.y);
     }
 

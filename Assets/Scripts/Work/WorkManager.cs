@@ -1,16 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Profiling;
 
 public class WorkManager : MonoBehaviour
 {
     [SerializeField] private NPCManager npcManager = null;
     [SerializeField] private MapManager mapManager = null;
     [SerializeField] private ResourcesManager resourcesManager = null;
-    [SerializeField] private SoundsManager soundsManager = null;
     [SerializeField] private GameObject[] signPrefab = null;
     [SerializeField] private CautionManager cautionManager = null;
+
 
     private List<GameObject> signs = null;
     private List<WorkBase> waitStream = null;
@@ -26,27 +25,22 @@ public class WorkManager : MonoBehaviour
 
     public void RequestDig(Vector2Int _targetPos)
     {
-
         ResourceBase resource = mapManager.GetResourceByPos(_targetPos);
+        if (resource.GetType() != typeof(ResourceSandStone) && resource.GetType() != typeof(ResourceGold))
+            return;
 
-        if (resource is ResourceSandStone || resource is ResourceGold)
+        WorkDig dig = new WorkDig(_targetPos, resource);
+        if (!waitStream.Contains(dig) && !doingList.Contains(dig))
         {
-            WorkDig dig = new WorkDig(_targetPos, resource);
-            bool condition = (!waitStream.Contains(dig) && !doingList.Contains(dig));
-
-            if (condition)
+            waitStream.Add(dig);
+            GameObject digSignGo = MakeSign(_targetPos, 0);
+            dig.onFinishWork += () =>
             {
-                waitStream.Add(dig);
-                GameObject digSignGo = MakeSign(_targetPos, 0);
-                dig.onFinishWork += () =>
-                {
-                    Destroy(digSignGo);
-                    mapManager.OnDigged(_targetPos);
-                    npcManager.FindNewPathAll();
-                };
-            }
+                Destroy(digSignGo);
+                mapManager.OnDigged(_targetPos);
+                npcManager.FindNewPathAll();
+            };
         }
-
     }
 
     public void RequestBuild(Vector2Int _targetPos, int _type)

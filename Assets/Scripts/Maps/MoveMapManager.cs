@@ -28,7 +28,6 @@ public class MoveMapManager : MonoBehaviour
         sizeW = _sizeW;
         sizeH = _sizeH;
         moveMap = new int[sizeW, sizeH];
-        pathFinder.InitializeMapSize(_sizeW, _sizeH);
 
         //벽이면 이동 불가능  -> 0, 공간이라면 이동 가능 -> 1, 
         for (int y = sizeH - 1; y >= 0; y--)
@@ -57,9 +56,9 @@ public class MoveMapManager : MonoBehaviour
         return (moveMap[_pos.x, _pos.y] >= 2);
     }
 
-    public void PathFind(Vector2Int _startPos, Vector2Int _goalPos, List<Node> _path)
+    public List<Node> PathFind(Vector2Int _startPos, Vector2Int _goalPos)
     {
-        pathFinder.PathFinding(_startPos, _goalPos, moveMap, _path);
+        return pathFinder.PathFinding(_startPos, _goalPos, sizeW, sizeH, moveMap);
     }
 
     public void SetMovable(Vector2Int _pos, int _value)

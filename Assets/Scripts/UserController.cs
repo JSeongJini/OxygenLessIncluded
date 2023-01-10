@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -16,8 +15,9 @@ public class UserController : MonoBehaviour
     [SerializeField] private GameObject resourceInfoPopup = null;
     [SerializeField] private GameObject npcInfoPopup = null;
     [SerializeField] private GameObject tutorialPopup = null;
-    
+
     private GameObject curCursor;
+  
 
     public enum EInputState
     {
@@ -55,14 +55,12 @@ public class UserController : MonoBehaviour
             SetState(0);
             popupManager.ClosePopup();
         }
-        
         if (Input.GetKeyDown(KeyCode.Space))
             Camera.main.transform.position = new Vector3(96f, 54f, -10f);
-        
         if (Input.GetKeyDown(KeyCode.F1))
             tutorialPopup.gameObject.SetActive(!tutorialPopup.activeSelf);
 
-        if (Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp(0))
         {
             if (EventSystem.current.IsPointerOverGameObject()) return;
             upPos = GetMousePos();
@@ -92,14 +90,15 @@ public class UserController : MonoBehaviour
 
             Vector2Int[] targetPos = new Vector2Int[(bigX - smallX + 1) * (bigY - smallY + 1)];
             int index = 0;
-            for (int y = smallY; y <= bigY; y++)
-                for (int x = smallX; x <= bigX; x++)
+            for(int y = smallY; y <= bigY; y++) 
+                for(int x = smallX; x <=bigX; x++)
                     targetPos[index++] = new Vector2Int(x, y);
 
             for (int i = 0; i < targetPos.Length; i++)
             {
                 if (mapManager.IsValidPos(targetPos[i]))
                 {
+                    //TODO : 작업과 상태를 일치하면 하나로 통일될 듯
                     switch (state)
                     {
                         case EInputState.Idle:
@@ -127,7 +126,6 @@ public class UserController : MonoBehaviour
             }
         }
     }
-
 
     private void CursorControl(){
         if (curCursor == null) return;
