@@ -97,6 +97,6 @@ public class NPCManager : MonoBehaviour
     public void FindNewPathAll()
     {
         foreach (NPC npc in npcList)
-            npc.FIndNewPath();
+            npc.FindNewpath();
     }
 }

@@ -2,12 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ResourceGold : ResourceSandStone
+public class ResourceGold : ResourceBase
 {
     protected override void Awake()
     {
         base.Awake();
-        sr.sprite = sprites[8];
     }
 
 }
